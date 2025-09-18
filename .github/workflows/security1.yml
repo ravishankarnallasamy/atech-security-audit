@@ -22,16 +22,15 @@ jobs:
 
     - name: Generate SBOM
       run: |
-        curl -L -o sbom-tool.tar.gz https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64.tar.gz
-        mkdir sbom-tool
-        tar -xzf sbom-tool.tar.gz -C sbom-tool
-        ./sbom-tool/sbom-tool generate -b . -bc . -pn "CustomerWorkload" -pv "1.0.0" -ps "PartnerOrg" -nsb https://sbom.partner.org -V Verbose
+        curl -Lo sbom-tool https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64
+        chmod +x sbom-tool
+        ./sbom-tool generate -b . -bc . -pn "CustomerWorkload" -pv "1.0.0" -ps "PartnerOrg" -nsb https://sbom.partner.org -V Verbose
 
     - name: Upload SBOM artifact
       uses: actions/upload-artifact@v4
       with:
         name: sbom-report
-        path: ./sbom-tool/_manifest/spdx_2.2/**/*
+        path: ./_manifest/spdx_2.2/**/*
 
     - name: Export Azure Policy Compliance
       run: |
