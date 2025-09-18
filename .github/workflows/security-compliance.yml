@@ -1,0 +1,27 @@
+name: Security and Compliance Checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-scan:
+    name: Run Security Scans
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Run Microsoft Security DevOps
+      uses: microsoft/security-devops-action@v1
+
+    - name: Generate SBOM
+      run: |
+        curl -sSL https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64.tar.gz | tar -xz
+        ./sbom-tool generate -b . -bc . -pn "MyProject" -pv "1.0.0" -ps "MyCompany" -nsb https://sbom.mycompany.com -V Verbose
+
+    - name: Export Azure Policy Compliance (manual step)
+      run: echo "Export Azure Policy compliance results from Azure Portal or via CLI."
