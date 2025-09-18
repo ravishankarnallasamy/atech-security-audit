@@ -1,38 +1,39 @@
-1  name: Security and Compliance Checks
-2
-3  on:
-4    workflow_dispatch:
-5
-6  jobs:
-7    security-scan:
-8      runs-on: ubuntu-latest
-9
-10     steps:
-11     - name: Checkout code
-12       uses: actions/checkout@v3
-13
-14     - name: Login to Azure
-15       uses: azure/login@v1
-16       with:
-17         creds: ${{ secrets.AZURE_CREDENTIALS }}
-18
-19     - name: Run Microsoft Security DevOps
-20       uses: microsoft/security-devops-action@v1
-21
-22     - name: Generate SBOM
-23       run: |
-24         curl -L -o sbom-tool.tar.gz https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64.tar.gz
-25         mkdir sbom-tool
-26         tar -xzf sbom-tool.tar.gz -C sbom-tool
-27         ./sbom-tool/sbom-tool generate -b . -bc . -pn "CustomerWorkload" -pv "1.0.0" -ps "PartnerOrg" -nsb https://sbom.partner.org -V Verbose
-28
-29     - name: Upload SBOM artifact
-30       uses: actions/upload-artifact@v3
-31       with:
-32         name: sbom-report
-33         path: ./sbom-tool/_manifest/spdx_2.2/**/*
-34
-35     - name: Export Azure Policy Compliance
-36       run: |
-37         az policy state list --subscription 8d704685-c402-4677-9e96-18dd3ec83ddc --output json > policy-compliance.json
-38         cat policy-compliance.json
+
+name: Security and Compliance Checks
+
+on:
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Run Microsoft Security DevOps
+      uses: microsoft/security-devops-action@v1
+
+    - name: Generate SBOM
+      run: |
+        curl -L -o sbom-tool.tar.gz https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64.tar.gz
+        mkdir sbom-tool
+        tar -xzf sbom-tool.tar.gz -C sbom-tool
+        ./sbom-tool/sbom-tool generate -b . -bc . -pn "CustomerWorkload" -pv "1.0.0" -ps "PartnerOrg" -nsb https://sbom.partner.org -V Verbose
+
+    - name: Upload SBOM artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: sbom-report
+        path: ./sbom-tool/_manifest/spdx_2.2/**/*
+
+    - name: Export Azure Policy Compliance
+      run: |
+        az policy state list --subscription 8d704685-c402-4677-9e96-18dd3ec83ddc --output json > policy-compliance.json
+        cat policy-compliance.json
