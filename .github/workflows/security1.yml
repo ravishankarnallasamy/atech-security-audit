@@ -28,7 +28,7 @@ jobs:
         ./sbom-tool/sbom-tool generate -b . -bc . -pn "CustomerWorkload" -pv "1.0.0" -ps "PartnerOrg" -nsb https://sbom.partner.org -V Verbose
 
     - name: Upload SBOM artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: sbom-report
         path: ./sbom-tool/_manifest/spdx_2.2/**/*
