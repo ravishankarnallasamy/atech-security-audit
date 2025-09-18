@@ -1,0 +1,38 @@
+name: Security and Compliance Checks
+
+on:
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Run Microsoft Security DevOps
+      uses: microsoft/security-devops-action@v1
+
+    - name: Generate SBOM
+      run: |
+        curl -L -o sbom-tool.tar.gz https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64.tar.gz
+        mkdir sbom-tool
+        tar -xzf sbom-tool.tar.gz -C sbom-tool
+        ./sbom-tool/sbom-tool generate -b . -bc . -pn "CustomerWorkload" -pv "1.0.0" -ps "PartnerOrg" -nsb https://sbom.partner.org -V Verbose
+
+    - name: Upload SBOM artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: sbom-report
+        path: ./sbom-tool/_manifest/spdx_2.2/**/*
+
+    - name: Export Azure Policy Compliance
+      run: |
+        az policy state list --subscription 8d704685-c402-4677-9e96-18dd3ec83ddc --output json > policy-compliance.json
+        cat policy-compliance.json
