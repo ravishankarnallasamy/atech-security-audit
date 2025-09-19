@@ -1,0 +1,21 @@
+name: Export Azure Policy Compliance
+
+on:
+  workflow_dispatch:
+
+jobs:
+  export-policy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install Azure CLI Policy Extension
+        run: az extension add --name policyinsights
+
+      - name: Export Policy Compliance
+        run: |
+          az policy state summarize --management-group 3823cf34-50b2-4705-b7b9-6fb5fe89ed46 --output json > compliance-summary.json
